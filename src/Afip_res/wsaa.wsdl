@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions targetNamespace="https://wsaahomo.afip.gov.ar/ws/services/LoginCms" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="https://wsaahomo.afip.gov.ar/ws/services/LoginCms" xmlns:intf="https://wsaahomo.afip.gov.ar/ws/services/LoginCms" xmlns:tns1="http://wsaa.view.sua.dvadac.desein.afip.gov" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<wsdl:definitions targetNamespace="https://wsaa.afip.gov.ar/ws/services/LoginCms" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="https://wsaa.afip.gov.ar/ws/services/LoginCms" xmlns:intf="https://wsaa.afip.gov.ar/ws/services/LoginCms" xmlns:tns1="http://wsaa.view.sua.dvadac.desein.afip.gov" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 <!--WSDL created by Apache Axis version: 1.4
 Built on Apr 22, 2006 (06:55:48 PDT)-->
  <wsdl:types>
   <schema elementFormDefault="qualified" targetNamespace="http://wsaa.view.sua.dvadac.desein.afip.gov" xmlns="http://www.w3.org/2001/XMLSchema">
-   <import namespace="https://wsaahomo.afip.gov.ar/ws/services/LoginCms"/>
+   <import namespace="https://wsaa.afip.gov.ar/ws/services/LoginCms"/>
    <element name="loginCms">
     <complexType>
      <sequence>
@@ -20,7 +20,7 @@ Built on Apr 22, 2006 (06:55:48 PDT)-->
     </complexType>
    </element>
   </schema>
-  <schema elementFormDefault="qualified" targetNamespace="https://wsaahomo.afip.gov.ar/ws/services/LoginCms" xmlns="http://www.w3.org/2001/XMLSchema">
+  <schema elementFormDefault="qualified" targetNamespace="https://wsaa.afip.gov.ar/ws/services/LoginCms" xmlns="http://www.w3.org/2001/XMLSchema">
    <complexType name="LoginFault">
     <sequence/>
    </complexType>
@@ -28,21 +28,27 @@ Built on Apr 22, 2006 (06:55:48 PDT)-->
   </schema>
  </wsdl:types>
 
-   <wsdl:message name="loginCmsRequest">
+   <wsdl:message name="loginCmsResponse">
 
-      <wsdl:part element="tns1:loginCms" name="parameters"/>
+      <wsdl:part element="tns1:loginCmsResponse" name="parameters">
+
+      </wsdl:part>
 
    </wsdl:message>
 
    <wsdl:message name="LoginFault">
 
-      <wsdl:part element="impl:fault" name="fault"/>
+      <wsdl:part element="impl:fault" name="fault">
+
+      </wsdl:part>
 
    </wsdl:message>
 
-   <wsdl:message name="loginCmsResponse">
+   <wsdl:message name="loginCmsRequest">
 
-      <wsdl:part element="tns1:loginCmsResponse" name="parameters"/>
+      <wsdl:part element="tns1:loginCms" name="parameters">
+
+      </wsdl:part>
 
    </wsdl:message>
 
@@ -50,11 +56,17 @@ Built on Apr 22, 2006 (06:55:48 PDT)-->
 
       <wsdl:operation name="loginCms">
 
-         <wsdl:input message="impl:loginCmsRequest" name="loginCmsRequest"/>
+         <wsdl:input message="impl:loginCmsRequest" name="loginCmsRequest">
 
-         <wsdl:output message="impl:loginCmsResponse" name="loginCmsResponse"/>
+       </wsdl:input>
 
-         <wsdl:fault message="impl:LoginFault" name="LoginFault"/>
+         <wsdl:output message="impl:loginCmsResponse" name="loginCmsResponse">
+
+       </wsdl:output>
+
+         <wsdl:fault message="impl:LoginFault" name="LoginFault">
+
+       </wsdl:fault>
 
       </wsdl:operation>
 
@@ -94,7 +106,7 @@ Built on Apr 22, 2006 (06:55:48 PDT)-->
 
       <wsdl:port binding="impl:LoginCmsSoapBinding" name="LoginCms">
 
-         <wsdlsoap:address location="https://wsaahomo.afip.gov.ar/ws/services/LoginCms"/>
+         <wsdlsoap:address location="https://wsaa.afip.gov.ar/ws/services/LoginCms"/>
 
       </wsdl:port>
 
