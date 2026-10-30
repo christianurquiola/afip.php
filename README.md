@@ -36,6 +36,7 @@
 * [Guía de inicio](#guía-de-inicio)
   * [Instalación](#instalaci%C3%B3n)
   * [Como usarlo](#como-usarlo)
+  * [Configuración SSL/TLS](#configuraci%C3%B3n-ssltls)
 * [Web Services](#web-services)
   * [Factura electrónica](#factura-electr%C3%B3nica)
   * [Padrón alcance 4](#padr%C3%B3n-alcance-4)
@@ -96,6 +97,48 @@ $afip = new Afip(array('CUIT' => 20111111112));
 Para más información acerca de los parámetros que se le puede pasar a la instancia new `Afip()` consulte sección [Primeros pasos](https://github.com/afipsdk/afip.php/wiki/Primeros-pasos#como-usarlo) de la documentación
 
 Una vez realizado esto podemos comenzar a usar el SDK con los Web Services disponibles
+
+### Configuración SSL/TLS
+
+El servidor de factura electrónica de producción (`servicios1.afip.gov.ar`) prioriza cifrados DHE con una clave de 1024 bits, que OpenSSL 3 rechaza con `SECLEVEL=2` (por defecto en Ubuntu 22.04/24.04) con el error `dh key too small`, informado como `SOAP Fault: HTTP Could not connect to host`.
+
+Por eso, **sin configuración adicional**, la factura electrónica (producción y homologación) negocia solo cifrados `ECDHE+AESGCM`, que tienen forward secrecy y son aceptados con `SECLEVEL=2`. No es necesario bajar el nivel de seguridad de OpenSSL.
+
+* WSAA y los padrones no cambian: usan la configuración por defecto de PHP y OpenSSL.
+* La verificación del certificado y del nombre del servidor (`verify_peer` y `verify_peer_name`) siempre queda activa y no puede desactivarse con esta opción.
+* TLS 1.3 no se ve afectado (la lista de cifrados aplica solo hasta TLS 1.2).
+
+Para personalizarlo se puede pasar la opción `ssl` con [opciones de contexto SSL de PHP](https://www.php.net/manual/es/context.ssl.php). Se aplica a todos los web services y su `ciphers` reemplaza al de la factura electrónica. Si `ssl` no es un array se ignora.
+````php
+// Otra lista de cifrados
+$afip = new Afip(array('CUIT' => 20111111112, 'ssl' => array('ciphers' => 'ECDHE+AESGCM:ECDHE+CHACHA20')));
+
+// Desactivar la política: lista de cifrados por defecto de PHP (comportamiento anterior)
+$afip = new Afip(array('CUIT' => 20111111112, 'ssl' => array('ciphers' => NULL)));
+````
+
+#### Pruebas
+
+````
+php tests/unit.php                               # sin red
+php tests/integration.php --network=testing      # homologación de ARCA y hosts públicos de prueba
+````
+
+`tests/integration.php` no se conecta a nada sin `--network`, y solo se conecta a producción con `--network=production`. Por defecto fuerza `SECLEVEL=2` en el proceso. Con `--seclevel=system` usa la configuración de OpenSSL del entorno; para simular un `SECLEVEL=2` global sin modificar el servidor se puede usar `OPENSSL_CONF` solo para ese proceso:
+````
+cat > /tmp/openssl-seclevel2.cnf <<'EOF'
+openssl_conf = default_conf
+[default_conf]
+ssl_conf = ssl_sect
+[ssl_sect]
+system_default = system_default_sect
+[system_default_sect]
+MinProtocol = TLSv1.2
+CipherString = DEFAULT:@SECLEVEL=2
+EOF
+OPENSSL_CONF=/tmp/openssl-seclevel2.cnf php tests/integration.php --network=testing --seclevel=system
+````
+Las credenciales de homologación (opcionales) se toman de variables de entorno y nunca se guardan en el repositorio, ver el encabezado de `tests/integration.php`. Las pruebas no generan comprobantes ni solicitan CAE.
 
 
 <!-- WEB SERVICES -->

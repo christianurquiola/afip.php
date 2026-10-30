@@ -220,12 +220,7 @@ class Afip {
 		unlink($this->TA_FOLDER."TRA-".$this->options['CUIT'].'-'.$service.".tmp");
 
 		//Request TA to WSAA
-		$client = new SoapClient($this->WSAA_WSDL, array(
-		'soap_version'   => SOAP_1_2,
-		'location'       => $this->WSAA_URL,
-		'trace'          => 1,
-		'exceptions'     => 0
-		)); 
+		$client = $this->CreateSoapClient($this->WSAA_WSDL, $this->WSAA_URL, SOAP_1_2);
 		$results=$client->loginCms(array('in0'=>$CMS));
 		if (is_soap_fault($results)) 
 			throw new Exception("SOAP Fault: ".$results->faultcode."\n".$results->faultstring."\n", 4);
@@ -236,6 +231,50 @@ class Afip {
 			return TRUE;
 		else
 			throw new Exception('Error writing "TA-'.$this->options['CUIT'].'-'.$service.'.xml"', 5);
+	}
+
+	/**
+	 * Create a SoapClient for an AFIP Web Service
+	 *
+	 * If $ciphers or the 'ssl' option are set, a stream context is
+	 * created with them, always verifying peer and peer name.
+	 * The 'ssl' option (array, other values are ignored) takes precedence
+	 * over $ciphers, 'ciphers' => NULL uses the PHP default cipher list
+	 *
+	 * @since 0.6.2
+	 *
+	 * @param string 	$wsdl 			WSDL file
+	 * @param string 	$location 		Web service url
+	 * @param int 		$soap_version 	SOAP version
+	 * @param string 	$ciphers 		(Optional) OpenSSL cipher list for the web service
+	 *
+	 * @return SoapClient
+	 **/
+	public function CreateSoapClient($wsdl, $location, $soap_version, $ciphers = NULL)
+	{
+		$options = array(
+			'soap_version' 	=> $soap_version,
+			'location' 		=> $location,
+			'trace' 		=> 1,
+			'exceptions' 	=> 0
+		);
+
+		$ssl = (isset($this->options['ssl']) && is_array($this->options['ssl'])) ? $this->options['ssl'] : array();
+
+		if (!array_key_exists('ciphers', $ssl))
+			$ssl['ciphers'] = $ciphers;
+
+		if (!isset($ssl['ciphers']))
+			unset($ssl['ciphers']);
+
+		if (!empty($ssl)) {
+			$ssl['verify_peer'] 		= TRUE;
+			$ssl['verify_peer_name'] 	= TRUE;
+
+			$options['stream_context'] = stream_context_create(array('ssl' => $ssl));
+		}
+
+		return new SoapClient($wsdl, $options);
 	}
 
 	public function __get($property)
@@ -333,6 +372,14 @@ class AfipWebService
 	 * @var string
 	 **/
 	var $URL_TEST;
+
+	/**
+	 * OpenSSL cipher list required by the web service
+	 * (NULL to use the system default)
+	 *
+	 * @var string
+	 **/
+	var $ssl_ciphers;
 	
 	/**
 	 * The Afip parent Class
@@ -369,12 +416,7 @@ class AfipWebService
 	public function ExecuteRequest($operation, $params = array())
 	{
 		if (!isset($this->soap_client)) {
-			$this->soap_client = new SoapClient($this->WSDL, array(
-				'soap_version' 	=> $this->soap_version,
-				'location' 		=> $this->URL,
-				'trace' 		=> 1,
-				'exceptions' 	=> 0
-			)); 
+			$this->soap_client = $this->afip->CreateSoapClient($this->WSDL, $this->URL, $this->soap_version, $this->ssl_ciphers);
 		}
 
 		$results = $this->soap_client->{$operation}($params);

@@ -17,6 +17,10 @@ class ElectronicBilling extends AfipWebService {
 	var $WSDL_TEST 		= 'wsfe.wsdl';
 	var $URL_TEST 		= 'https://wswhomo.afip.gov.ar/wsfev1/service.asmx';
 
+	// servicios1.afip.gov.ar prefers DHE with a 1024 bits key, rejected
+	// by OpenSSL 3 (SECLEVEL=2); only ECDHE keeps forward secrecy there
+	var $ssl_ciphers 	= 'ECDHE+AESGCM';
+
 	/**
 	 * Gets last voucher number 
 	 * 
